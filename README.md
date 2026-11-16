@@ -1,1 +1,1 @@
-Integrantes: Adrian
+Integrantes: Adrian, Daniel
