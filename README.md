@@ -1,1 +1,1 @@
-Integrantes: Adrian, Daniel (freja)
+Integrantes: Adrian, Daniel
