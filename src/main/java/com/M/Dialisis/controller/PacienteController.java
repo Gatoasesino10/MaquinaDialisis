@@ -17,7 +17,7 @@ public class PacienteController {
     private final float peso = 71.2f;
     private final float altura = 1.75f;
     private final int edad = 54;
-    private final String sexo = "Masculino";
+    private final String sexo = "Femenino";
 
     // Estado interno de sesión y rutina (ModoEnum: RAPIDO / LENTO)
     private String rutinaActual = "RAPIDO";
