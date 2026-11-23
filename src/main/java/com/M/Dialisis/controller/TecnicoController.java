@@ -1,4 +1,4 @@
-package com.M.Dialisis.controller; // <-- ¡IMPORTANTE! Cambia esto por el package real de tu proyecto
+package com.M.Dialisis.controller; 
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

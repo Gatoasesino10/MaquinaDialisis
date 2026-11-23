@@ -1,52 +1,49 @@
-package com.M.Dialisis.controller;
+package com.M.Dialisis.controller; 
 
-import com.M.Dialisis.model.Historial;
-import com.M.Dialisis.service.HistorialService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/historial")
 public class HistorialController {
 
-    @Autowired
-    private HistorialService historialService;
+    // Atributos según la clase Historial del diagrama de clases
+    private String idSesion = "SES-105";
+    private String fecha = "2026-11-23";
+    private int duracion = 180; // minutos (Modo RAPIDO)
+    private String graficasEvolucion = "PRU: 70% | Kt/V: 1.38 | Flujo medio: 310 ml/min";
+    private String responsableInterrupcion = "NINGUNO";
 
-    // 1. LEER TODOS (GET) -> Equivalente a obtenerHistorial() del diagrama
-    // Prueba en navegador: http://localhost:8080/historial
+    // Endpoint principal: http://localhost:8080/historial
+    // Implementa + obtenerHistorial(): void
     @GetMapping
-    public List<Historial> obtenerHistorial() {
-        return historialService.obtenerTodoElHistorial();
+    public Map<String, Object> obtenerHistorial() {
+        Map<String, Object> informe = new HashMap<>();
+        informe.put("idSesion", this.idSesion);
+        informe.put("fecha", this.fecha);
+        informe.put("duracion_minutos", this.duracion);
+        informe.put("graficasEvolucion", this.graficasEvolucion);
+        informe.put("responsableInterrupcion", this.responsableInterrupcion);
+        informe.put("estadoSesion", this.responsableInterrupcion.equals("NINGUNO") ? "COMPLETA" : "INCOMPLETA");
+        return informe;
     }
 
-    // 2. LEER POR ID (GET)
-    // Prueba en navegador: http://localhost:8080/historial/1
-    @GetMapping("/{id}")
-    public Historial obtenerSesionPorId(@PathVariable Long id) {
-        return historialService.obtenerPorId(id);
-    }
+    // Endpoint para simular el guardado de un informe tras una sesión o interrupción
+    // Implementa + guardarInforme(): void
+    // Prueba en navegador: http://localhost:8080/historial/guardar/SES-106/PACIENTE
+    @GetMapping("/guardar/{nuevoId}/{responsable}")
+    public Map<String, Object> guardarInforme(@PathVariable String nuevoId, @PathVariable String responsable) {
+        this.idSesion = nuevoId;
+        this.responsableInterrupcion = responsable.toUpperCase();
 
-    // 3. CREAR (POST) -> Equivalente a guardarInforme() del diagrama
-    // Endpoint: POST http://localhost:8080/historial
-    @PostMapping
-    public Historial guardarInforme(@RequestBody Historial nuevaSesion) {
-        return historialService.guardarInforme(nuevaSesion);
-    }
-
-    // 4. ACTUALIZAR (PUT)
-    // Endpoint: PUT http://localhost:8080/historial/1
-    @PutMapping("/{id}")
-    public Historial actualizarSesion(@PathVariable Long id, @RequestBody Historial sesionActualizada) {
-        return historialService.actualizarInforme(id, sesionActualizada);
-    }
-
-    // 5. BORRAR (DELETE)
-    // Endpoint: DELETE http://localhost:8080/historial/1
-    @DeleteMapping("/{id}")
-    public String eliminarSesion(@PathVariable Long id) {
-        historialService.eliminarInforme(id);
-        return "Sesión con ID " + id + " eliminada correctamente del historial.";
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "Informe guardado correctamente en el historial");
+        respuesta.put("idSesionGuardada", this.idSesion);
+        respuesta.put("responsableInterrupcion", this.responsableInterrupcion);
+        return respuesta;
     }
 }
