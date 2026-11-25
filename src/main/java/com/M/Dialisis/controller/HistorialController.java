@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.M.Dialisis.model.Historial;
-import com.M.Dialisis.model.HistorialService; // <-- Cámbialo a com.M.Dialisis.model.HistorialService si lo tienes en model
+import com.M.Dialisis.model.HistorialService;
 
 @RestController
 public class HistorialController {
@@ -22,19 +22,16 @@ public class HistorialController {
     @Autowired
     private HistorialService historialService;
 
-    // Devuelve todos los registros del historial (obtenerHistorial)
     @GetMapping("/historiales")
     public List<Historial> getHistoriales() {
         return historialService.getAllHistoriales();
     }
 
-    // Devuelve un registro del historial por ID
     @GetMapping("/historial/{id}")
     public Historial getHistorial(@PathVariable("id") Long id) {
         return historialService.getHistorial(id);
     }
 
-    // Crea un registro en el historial recibido en formato JSON (guardarInforme)
     @PostMapping(value = "/historial", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> saveHistorial(@RequestBody Historial historial) {
         try {
@@ -45,7 +42,6 @@ public class HistorialController {
         }
     }
 
-    // Crea un registro en el historial recibido en formato HTML Form
     @PostMapping(value = "/historial", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public ResponseEntity<?> saveHTML(Historial historial) {
         try {
@@ -56,7 +52,6 @@ public class HistorialController {
         }
     }
 
-    // Actualiza un registro del historial con el objeto Historial
     @PutMapping("/historial")
     public ResponseEntity<?> updateHistorial(Historial historial) {
         try {
@@ -67,7 +62,6 @@ public class HistorialController {
         }
     }
 
-    // Elimina un registro pasando el objeto Historial
     @DeleteMapping("/historial")
     public ResponseEntity<?> deleteHistorial(@RequestBody Historial historial) {
         try {
@@ -78,7 +72,6 @@ public class HistorialController {
         }
     }
 
-    // Otra forma de eliminar un registro con el ID
     @DeleteMapping("/historial/{id}")
     public ResponseEntity<?> deleteHistorial(@PathVariable("id") Long id) {
         try {

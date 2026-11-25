@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.M.Dialisis.model.PersonalSanitario;
-import com.M.Dialisis.model.PersonalSanitarioService; // <-- Cámbialo a com.M.Dialisis.model.PersonalSanitarioService si lo tienes en model
+import com.M.Dialisis.model.PersonalSanitarioService;
 
 @RestController
 public class PersonalController {
@@ -24,19 +24,16 @@ public class PersonalController {
     @Autowired
     private PersonalSanitarioService personalSanitarioService;
 
-    // Devuelve todo el personal sanitario de H2
     @GetMapping("/personalSanitarios")
     public List<PersonalSanitario> getPersonalSanitarios() {
         return personalSanitarioService.getAllPersonalSanitario();
     }
 
-    // Devuelve un miembro del personal sanitario por ID
     @GetMapping("/personalSanitario/{id}")
     public PersonalSanitario getPersonalSanitario(@PathVariable("id") String id) {
         return personalSanitarioService.getPersonalSanitario(id);
     }
 
-    // Crea un registro de personal sanitario recibido en formato JSON
     @PostMapping(value = "/personalSanitario", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> savePersonalSanitario(@RequestBody PersonalSanitario personal) {
         try {
@@ -47,7 +44,6 @@ public class PersonalController {
         }
     }
 
-    // Crea un registro de personal sanitario recibido en formato HTML Form
     @PostMapping(value = "/personalSanitario", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public ResponseEntity<?> saveHTML(PersonalSanitario personal) {
         try {
@@ -58,7 +54,6 @@ public class PersonalController {
         }
     }
 
-    // Actualiza un registro de personal sanitario
     @PutMapping("/personalSanitario")
     public ResponseEntity<?> updatePersonalSanitario(PersonalSanitario personal) {
         try {
@@ -69,7 +64,6 @@ public class PersonalController {
         }
     }
 
-    // Elimina un registro pasando el objeto PersonalSanitario
     @DeleteMapping("/personalSanitario")
     public ResponseEntity<?> deletePersonalSanitario(@RequestBody PersonalSanitario personal) {
         try {
@@ -80,7 +74,6 @@ public class PersonalController {
         }
     }
 
-    // Otra forma de eliminar un registro con el ID
     @DeleteMapping("/personalSanitario/{id}")
     public ResponseEntity<?> deletePersonalSanitario(@PathVariable("id") String id) {
         try {
@@ -91,9 +84,6 @@ public class PersonalController {
         }
     }
 
-    // --- MÉTODOS DEL DIAGRAMA ADAPTADOS A LA BASE DE DATOS ---
-
-    // Interrumpir diálisis: GET http://localhost:8080/personalSanitario/MED-042/interrumpir
     @GetMapping("/personalSanitario/{id}/interrumpir")
     public Map<String, Object> interrumpirDialisisEndpoint(@PathVariable("id") String id) {
         PersonalSanitario p = personalSanitarioService.getPersonalSanitario(id);
@@ -107,7 +97,6 @@ public class PersonalController {
         return respuesta;
     }
 
-    // Llamar ambulancia: GET http://localhost:8080/personalSanitario/MED-042/ambulancia
     @GetMapping("/personalSanitario/{id}/ambulancia")
     public Map<String, Object> llamarAmbuEndpoint(@PathVariable("id") String id) {
         PersonalSanitario p = personalSanitarioService.getPersonalSanitario(id);
