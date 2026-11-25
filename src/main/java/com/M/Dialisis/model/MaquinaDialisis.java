@@ -1,15 +1,18 @@
 package com.M.Dialisis.model;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 @Entity
-@Table(name = "maquina_dialisis")
 public class MaquinaDialisis {
 
     @Id
-    private String id; // Ej: "MAQ-DIALISIS-001"
+    private String id;
 
     private boolean estadoVia;
     private boolean alimentacionOk;
@@ -18,6 +21,18 @@ public class MaquinaDialisis {
     private int flujoSanguineo;
     private boolean aireDetectado;
     private boolean enFuncionamiento;
+
+    @OneToOne
+    private Paciente paciente;
+
+    @ManyToOne
+    private PersonalSanitario personalSanitario;
+
+    @ManyToOne
+    private Tecnico tecnico;
+
+    @OneToMany
+    private List<Historial> historiales;
 
     public MaquinaDialisis() {
     }
@@ -57,4 +72,16 @@ public class MaquinaDialisis {
 
     public boolean isEnFuncionamiento() { return enFuncionamiento; }
     public void setEnFuncionamiento(boolean enFuncionamiento) { this.enFuncionamiento = enFuncionamiento; }
+
+    public Paciente getPaciente() { return paciente; }
+    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+
+    public PersonalSanitario getPersonalSanitario() { return personalSanitario; }
+    public void setPersonalSanitario(PersonalSanitario personalSanitario) { this.personalSanitario = personalSanitario; }
+
+    public Tecnico getTecnico() { return tecnico; }
+    public void setTecnico(Tecnico tecnico) { this.tecnico = tecnico; }
+
+    public List<Historial> getHistoriales() { return historiales; }
+    public void setHistoriales(List<Historial> historiales) { this.historiales = historiales; }
 }
