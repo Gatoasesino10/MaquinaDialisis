@@ -16,15 +16,12 @@ public class Tecnico {
     private boolean estadoVia;
     private boolean alimentacionOk;
 
-    // Relación 1:n (como en la diapositiva 35: Libreria -> List<Libro>)
     @OneToMany
     private List<MaquinaDialisis> maquinas;
 
-    // Constructor vacío obligatorio para JPA / H2
     public Tecnico() {
     }
 
-    // Constructor con atributos básicos
     public Tecnico(String id, String idMaquinaAsignada, boolean estadoVia, boolean alimentacionOk) {
         this.id = id;
         this.idMaquinaAsignada = idMaquinaAsignada;
@@ -32,7 +29,6 @@ public class Tecnico {
         this.alimentacionOk = alimentacionOk;
     }
 
-    // Getters y Setters de atributos
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -45,7 +41,6 @@ public class Tecnico {
     public boolean isAlimentacionOk() { return alimentacionOk; }
     public void setAlimentacionOk(boolean alimentacionOk) { this.alimentacionOk = alimentacionOk; }
 
-    // Getter y Setter de la relación
     public List<MaquinaDialisis> getMaquinas() { return maquinas; }
     public void setMaquinas(List<MaquinaDialisis> maquinas) { this.maquinas = maquinas; }
 }

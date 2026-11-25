@@ -1,4 +1,4 @@
-package com.M.Dialisis.model; // <-- Cámbialo a com.M.Dialisis.model si lo guardas en esa carpeta
+package com.M.Dialisis.model;
 
 import java.util.List;
 
@@ -11,22 +11,18 @@ public class TecnicoService {
     @Autowired
     RepositoryTecnico repositoryTecnico;
 
-    // Devuelve todos los técnicos
     public List<Tecnico> getAllTecnicos() {
         return repositoryTecnico.findAll();
     }
 
-    // Devuelve un técnico por ID
     public Tecnico getTecnico(String id) {
         return repositoryTecnico.getReferenceById(id);
     }
 
-    // Crea un técnico
     public Tecnico addTecnico(Tecnico t) {
         return repositoryTecnico.saveAndFlush(t);
     }
 
-    // Actualiza un técnico
     public void updateTecnico(Tecnico t) {
         Tecnico tecnico = repositoryTecnico.getReferenceById(t.getId());
         tecnico.setIdMaquinaAsignada(t.getIdMaquinaAsignada());
@@ -35,12 +31,10 @@ public class TecnicoService {
         repositoryTecnico.save(tecnico);
     }
 
-    // Elimina un técnico
     public void removeTecnico(Tecnico t) {
         repositoryTecnico.delete(t);
     }
 
-    // Elimina un técnico por ID
     public void removeTecnicoID(String id) {
         repositoryTecnico.deleteById(id);
     }

@@ -1,4 +1,4 @@
-package com.M.Dialisis.model; // <-- Cámbialo a com.M.Dialisis.model si lo guardas en esa carpeta
+package com.M.Dialisis.model;
 
 import java.util.List;
 
@@ -11,22 +11,18 @@ public class PacienteService {
     @Autowired
     RepositoryPaciente repositoryPaciente;
 
-    // Devuelve todos los pacientes
     public List<Paciente> getAllPacientes() {
         return repositoryPaciente.findAll();
     }
 
-    // Devuelve un paciente por DNI (ID)
     public Paciente getPaciente(String dni) {
         return repositoryPaciente.getReferenceById(dni);
     }
 
-    // Crea un paciente
     public Paciente addPaciente(Paciente p) {
         return repositoryPaciente.saveAndFlush(p);
     }
 
-    // Actualiza un paciente
     public void updatePaciente(Paciente p) {
         Paciente paciente = repositoryPaciente.getReferenceById(p.getDni());
         paciente.setPesoSeco(p.getPesoSeco());
@@ -39,12 +35,10 @@ public class PacienteService {
         repositoryPaciente.save(paciente);
     }
 
-    // Elimina un paciente
     public void removePaciente(Paciente p) {
         repositoryPaciente.delete(p);
     }
 
-    // Elimina un paciente por DNI (ID)
     public void removePacienteID(String dni) {
         repositoryPaciente.deleteById(dni);
     }
