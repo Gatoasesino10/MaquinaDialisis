@@ -1,49 +1,91 @@
-package com.M.Dialisis.controller; 
+package com.M.Dialisis.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.HashMap;
-import java.util.Map;
+
+import com.M.Dialisis.model.Historial;
+import com.M.Dialisis.model.HistorialService; // <-- Cámbialo a com.M.Dialisis.model.HistorialService si lo tienes en model
 
 @RestController
-@RequestMapping("/historial")
 public class HistorialController {
 
-    // Atributos según la clase Historial del diagrama de clases
-    private String idSesion = "SES-105";
-    private String fecha = "2026-11-23";
-    private int duracion = 180; // minutos (Modo RAPIDO)
-    private String graficasEvolucion = "PRU: 70% | Kt/V: 1.38 | Flujo medio: 310 ml/min";
-    private String responsableInterrupcion = "NINGUNO";
+    @Autowired
+    private HistorialService historialService;
 
-    // Endpoint principal: http://localhost:8080/historial
-    // Implementa + obtenerHistorial(): void
-    @GetMapping
-    public Map<String, Object> obtenerHistorial() {
-        Map<String, Object> informe = new HashMap<>();
-        informe.put("idSesion", this.idSesion);
-        informe.put("fecha", this.fecha);
-        informe.put("duracion_minutos", this.duracion);
-        informe.put("graficasEvolucion", this.graficasEvolucion);
-        informe.put("responsableInterrupcion", this.responsableInterrupcion);
-        informe.put("estadoSesion", this.responsableInterrupcion.equals("NINGUNO") ? "COMPLETA" : "INCOMPLETA");
-        return informe;
+    // Devuelve todos los registros del historial (obtenerHistorial)
+    @GetMapping("/historiales")
+    public List<Historial> getHistoriales() {
+        return historialService.getAllHistoriales();
     }
 
-    // Endpoint para simular el guardado de un informe tras una sesión o interrupción
-    // Implementa + guardarInforme(): void
-    // Prueba en navegador: http://localhost:8080/historial/guardar/SES-106/PACIENTE
-    @GetMapping("/guardar/{nuevoId}/{responsable}")
-    public Map<String, Object> guardarInforme(@PathVariable String nuevoId, @PathVariable String responsable) {
-        this.idSesion = nuevoId;
-        this.responsableInterrupcion = responsable.toUpperCase();
+    // Devuelve un registro del historial por ID
+    @GetMapping("/historial/{id}")
+    public Historial getHistorial(@PathVariable("id") Long id) {
+        return historialService.getHistorial(id);
+    }
 
-        Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("mensaje", "Informe guardado correctamente en el historial");
-        respuesta.put("idSesionGuardada", this.idSesion);
-        respuesta.put("responsableInterrupcion", this.responsableInterrupcion);
-        return respuesta;
+    // Crea un registro en el historial recibido en formato JSON (guardarInforme)
+    @PostMapping(value = "/historial", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> saveHistorial(@RequestBody Historial historial) {
+        try {
+            historialService.addHistorial(historial);
+            return ResponseEntity.ok().body("Un nuevo informe se ha añadido al historial");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al guardar el informe en el historial");
+        }
+    }
+
+    // Crea un registro en el historial recibido en formato HTML Form
+    @PostMapping(value = "/historial", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    public ResponseEntity<?> saveHTML(Historial historial) {
+        try {
+            historialService.addHistorial(historial);
+            return ResponseEntity.ok().body("Un nuevo informe se ha añadido al historial");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al guardar el informe en el historial");
+        }
+    }
+
+    // Actualiza un registro del historial con el objeto Historial
+    @PutMapping("/historial")
+    public ResponseEntity<?> updateHistorial(Historial historial) {
+        try {
+            historialService.updateHistorial(historial);
+            return ResponseEntity.ok().body("El informe del historial se ha actualizado");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al actualizar el informe");
+        }
+    }
+
+    // Elimina un registro pasando el objeto Historial
+    @DeleteMapping("/historial")
+    public ResponseEntity<?> deleteHistorial(@RequestBody Historial historial) {
+        try {
+            historialService.removeHistorial(historial);
+            return ResponseEntity.ok().body("El informe se ha eliminado del historial");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al eliminar el informe");
+        }
+    }
+
+    // Otra forma de eliminar un registro con el ID
+    @DeleteMapping("/historial/{id}")
+    public ResponseEntity<?> deleteHistorial(@PathVariable("id") Long id) {
+        try {
+            historialService.removeHistorialID(id);
+            return ResponseEntity.ok().body("El informe se ha eliminado del historial");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al eliminar el informe");
+        }
     }
 }

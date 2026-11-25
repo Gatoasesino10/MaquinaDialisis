@@ -1,118 +1,123 @@
 package com.M.Dialisis.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.M.Dialisis.model.PersonalSanitario;
+import com.M.Dialisis.model.PersonalSanitarioService; // <-- Cámbialo a com.M.Dialisis.model.PersonalSanitarioService si lo tienes en model
+
 @RestController
-@RequestMapping("/personalSanitario")
 public class PersonalController {
 
-    // Atributo según la clase Personal Sanitario del diagrama de clases: + id: String
-    private final String id = "MED-042";
+    @Autowired
+    private PersonalSanitarioService personalSanitarioService;
 
-    // Estado de monitorización recibido mediante el patrón Observer (actualizar(sensor))
-    private float ultimaTemperatura = 36.8f;
-    private boolean aireDetectado = false;
-    private boolean dialisisActiva = true;
-    private boolean ambulanciaEnCamino = false;
-
-    // Endpoint principal: http://localhost:8080/personalSanitario
-    // Muestra el panel de control del sanitario y los datos recibidos del Observer
-    @GetMapping
-    public Map<String, Object> obtenerPanelSanitario() {
-        Map<String, Object> panel = new HashMap<>();
-        panel.put("idPersonalSanitario", this.id);
-        panel.put("rol", "Nefrólogo / Supervisor Clínico");
-        panel.put("dialisisPacienteActiva", this.dialisisActiva);
-        panel.put("ambulanciaSolicitada", this.ambulanciaEnCamino);
-        panel.put("telemetriaSensor_Temperatura_C", this.ultimaTemperatura);
-        panel.put("telemetriaSensor_AireEnCircuito", this.aireDetectado);
-        return panel;
+    // Devuelve todo el personal sanitario de H2
+    @GetMapping("/personalSanitarios")
+    public List<PersonalSanitario> getPersonalSanitarios() {
+        return personalSanitarioService.getAllPersonalSanitario();
     }
 
-    // Método del diagrama: + consultarPaciente(p: Paciente)
-    // Prueba en navegador: http://localhost:8080/personalSanitario/paciente/12345678A
-    @GetMapping("/paciente/{dniPaciente}")
-    public Map<String, Object> consultarPaciente(@PathVariable String dniPaciente) {
-        Map<String, Object> datosPaciente = new HashMap<>();
-        datosPaciente.put("medicoConsultor", this.id);
-        datosPaciente.put("dniPaciente", dniPaciente);
-        datosPaciente.put("estadoClinico", this.aireDetectado ? "ALERTA CRÍTICA" : "ESTABLE");
-        datosPaciente.put("temperaturaSanguinea", this.ultimaTemperatura + " °C");
-        datosPaciente.put("flujoSanguineo", "310 ml/min");
-        datosPaciente.put("kt_v", 1.35);
-        return datosPaciente;
+    // Devuelve un miembro del personal sanitario por ID
+    @GetMapping("/personalSanitario/{id}")
+    public PersonalSanitario getPersonalSanitario(@PathVariable("id") String id) {
+        return personalSanitarioService.getPersonalSanitario(id);
     }
 
-    // Método del diagrama: + verHistorial(Paciente): String
-    // Prueba en navegador: http://localhost:8080/personalSanitario/historial/12345678A
-    @GetMapping("/historial/{dniPaciente}")
-    public Map<String, Object> verHistorialEndpoint(@PathVariable String dniPaciente) {
-        String resumenHistorial = verHistorial(dniPaciente);
+    // Crea un registro de personal sanitario recibido en formato JSON
+    @PostMapping(value = "/personalSanitario", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> savePersonalSanitario(@RequestBody PersonalSanitario personal) {
+        try {
+            personalSanitarioService.addPersonalSanitario(personal);
+            return ResponseEntity.ok().body("Un nuevo miembro del personal sanitario se ha añadido");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("El personal sanitario ya existe");
+        }
+    }
+
+    // Crea un registro de personal sanitario recibido en formato HTML Form
+    @PostMapping(value = "/personalSanitario", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    public ResponseEntity<?> saveHTML(PersonalSanitario personal) {
+        try {
+            personalSanitarioService.addPersonalSanitario(personal);
+            return ResponseEntity.ok().body("Un nuevo miembro del personal sanitario se ha añadido");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("El personal sanitario ya existe");
+        }
+    }
+
+    // Actualiza un registro de personal sanitario
+    @PutMapping("/personalSanitario")
+    public ResponseEntity<?> updatePersonalSanitario(PersonalSanitario personal) {
+        try {
+            personalSanitarioService.updatePersonalSanitario(personal);
+            return ResponseEntity.ok().body("El personal sanitario se ha actualizado");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al actualizar el personal sanitario");
+        }
+    }
+
+    // Elimina un registro pasando el objeto PersonalSanitario
+    @DeleteMapping("/personalSanitario")
+    public ResponseEntity<?> deletePersonalSanitario(@RequestBody PersonalSanitario personal) {
+        try {
+            personalSanitarioService.removePersonalSanitario(personal);
+            return ResponseEntity.ok().body("El personal sanitario se ha eliminado");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al eliminar el personal sanitario");
+        }
+    }
+
+    // Otra forma de eliminar un registro con el ID
+    @DeleteMapping("/personalSanitario/{id}")
+    public ResponseEntity<?> deletePersonalSanitario(@PathVariable("id") String id) {
+        try {
+            personalSanitarioService.removePersonalSanitarioID(id);
+            return ResponseEntity.ok().body("El personal sanitario se ha eliminado");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al eliminar el personal sanitario");
+        }
+    }
+
+    // --- MÉTODOS DEL DIAGRAMA ADAPTADOS A LA BASE DE DATOS ---
+
+    // Interrumpir diálisis: GET http://localhost:8080/personalSanitario/MED-042/interrumpir
+    @GetMapping("/personalSanitario/{id}/interrumpir")
+    public Map<String, Object> interrumpirDialisisEndpoint(@PathVariable("id") String id) {
+        PersonalSanitario p = personalSanitarioService.getPersonalSanitario(id);
+        p.setDialisisActiva(false);
+        personalSanitarioService.updatePersonalSanitario(p);
 
         Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("dniPaciente", dniPaciente);
-        respuesta.put("registroClinico", resumenHistorial);
+        respuesta.put("accionEjecutadaPor", p.getId());
+        respuesta.put("dialisisInterrumpida", true);
+        respuesta.put("estadoSesion", "DETENIDA_POR_MEDICO");
         return respuesta;
     }
 
-    // Método del diagrama: + interrumpirDialisis(bool): bool
-    // Prueba en navegador: http://localhost:8080/personalSanitario/interrumpir
-    @GetMapping("/interrumpir")
-    public Map<String, Object> interrumpirDialisisEndpoint() {
-        boolean ordenParada = true;
-        boolean resultado = interrumpirDialisis(ordenParada);
+    // Llamar ambulancia: GET http://localhost:8080/personalSanitario/MED-042/ambulancia
+    @GetMapping("/personalSanitario/{id}/ambulancia")
+    public Map<String, Object> llamarAmbuEndpoint(@PathVariable("id") String id) {
+        PersonalSanitario p = personalSanitarioService.getPersonalSanitario(id);
+        p.setAmbulanciaEnCamino(true);
+        personalSanitarioService.updatePersonalSanitario(p);
 
         Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("accionEjecutadaPor", this.id);
-        respuesta.put("dialisisInterrumpida", resultado);
-        respuesta.put("estadoSesion", this.dialisisActiva ? "EN_CURSO" : "DETENIDA_POR_MEDICO");
-        return respuesta;
-    }
-
-    // Método del diagrama: + llamarAmbu(bool): bool
-    // Prueba en navegador: http://localhost:8080/personalSanitario/ambulancia
-    @GetMapping("/ambulancia")
-    public Map<String, Object> llamarAmbuEndpoint() {
-        boolean emergenciaVital = true;
-        boolean llamadaRealizada = llamarAmbu(emergenciaVital);
-
-        Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("solicitadoPor", this.id);
-        respuesta.put("ambulanciaEnviada", llamadaRealizada);
+        respuesta.put("solicitadoPor", p.getId());
+        respuesta.put("ambulanciaEnviada", true);
         respuesta.put("mensaje", "Alerta de emergencia transmitida al servicio externo de ambulancias.");
         return respuesta;
-    }
-
-    // --- IMPLEMENTACIÓN DE LOS MÉTODOS EXACTOS DEL DIAGRAMA ---
-
-    public String verHistorial(String dniPaciente) {
-        return "Sesión #104 (Completa - 3h - PRU: 69%) | Sesión #105 (Completa - 3h - PRU: 71%)";
-    }
-
-    public boolean interrumpirDialisis(boolean anomaliasDetectadas) {
-        if (anomaliasDetectadas) {
-            this.dialisisActiva = false;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean llamarAmbu(boolean riesgoVital) {
-        if (riesgoVital) {
-            this.ambulanciaEnCamino = true;
-            return true;
-        }
-        return false;
-    }
-
-    // Método de la interfaz Observador: + actualizar(sensor: Sensor): void
-    public void actualizar(float nuevaTemperatura, boolean presenciaAire) {
-        this.ultimaTemperatura = nuevaTemperatura;
-        this.aireDetectado = presenciaAire;
     }
 }

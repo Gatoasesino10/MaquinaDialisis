@@ -1,115 +1,107 @@
 package com.M.Dialisis.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.M.Dialisis.model.Paciente;
+import com.M.Dialisis.model.PacienteService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/paciente")
 public class PacienteController {
 
-    // Atributos según la clase Paciente del diagrama de clases
-    private final String dni = "12345678A";
-    private final float pesoSeco = 68.5f;
-    private final float peso = 71.2f;
-    private final float altura = 1.75f;
-    private final int edad = 54;
-    private final String sexo = "Femenino";
+    @Autowired
+    private PacienteService pacienteService;
 
-    // Estado interno de sesión y rutina (ModoEnum: RAPIDO / LENTO)
-    private String rutinaActual = "RAPIDO";
-    private boolean dialisisEnCurso = false;
-
-    // Endpoint principal: http://localhost:8080/paciente
-    // Muestra los datos biométricos del paciente y el estado de sus funciones
+    // 1. LEER TODOS LOS PACIENTES DE H2: GET http://localhost:8080/paciente
     @GetMapping
-    public Map<String, Object> obtenerInfoPaciente() {
-        Map<String, Object> info = new HashMap<>();
-        info.put("dni", this.dni);
-        info.put("pesoSeco_kg", this.pesoSeco);
-        info.put("pesoActual_kg", this.peso);
-        info.put("liquidoAExtraer_kg", Math.round((this.peso - this.pesoSeco) * 100.0) / 100.0);
-        info.put("altura_m", this.altura);
-        info.put("edad", this.edad);
-        info.put("sexo", this.sexo);
-        info.put("rutinaSeleccionada", this.rutinaActual);
-        info.put("dialisisActiva", this.dialisisEnCurso);
-        info.put("nivelAguaDisponible", verAgua() + "%");
-        info.put("proximoHorario", consultarHorario());
-        return info;
+    public List<Paciente> obtenerTodosLosPacientes() {
+        return pacienteService.getAllPacientes();
     }
 
-    // Método del diagrama: + escogerRutina(enum): bool, enum
-    // Prueba en navegador: http://localhost:8080/paciente/rutina/LENTO (o RAPIDO)
-    @GetMapping("/rutina/{modo}")
-    public Map<String, Object> escogerRutina(@PathVariable String modo) {
+    // 2. LEER UN PACIENTE POR DNI: GET http://localhost:8080/paciente/12345678A
+    @GetMapping("/{dni}")
+    public Paciente obtenerPacientePorDni(@PathVariable String dni) {
+        return pacienteService.getPaciente(dni);
+    }
+
+    // 3. CREAR UN PACIENTE EN H2: POST http://localhost:8080/paciente
+    @PostMapping
+    public Paciente crearPaciente(@RequestBody Paciente nuevoPaciente) {
+        return pacienteService.addPaciente(nuevoPaciente);
+    }
+
+    // 4. ACTUALIZAR UN PACIENTE: PUT http://localhost:8080/paciente
+    @PutMapping
+    public String actualizarPaciente(@RequestBody Paciente pacienteActualizado) {
+        pacienteService.updatePaciente(pacienteActualizado);
+        return "Paciente con DNI " + pacienteActualizado.getDni() + " actualizado.";
+    }
+
+    // 5. BORRAR UN PACIENTE: DELETE http://localhost:8080/paciente/12345678A
+    @DeleteMapping("/{dni}")
+    public String eliminarPaciente(@PathVariable String dni) {
+        pacienteService.removePacienteID(dni);
+        return "Paciente con DNI " + dni + " eliminado.";
+    }
+
+    // --- MÉTODOS DEL DIAGRAMA ADAPTADOS A LA BASE DE DATOS ---
+
+    // Cambiar rutina en BD: GET http://localhost:8080/paciente/12345678A/rutina/LENTO
+    @GetMapping("/{dni}/rutina/{modo}")
+    public Map<String, Object> escogerRutina(@PathVariable String dni, @PathVariable String modo) {
+        Paciente p = pacienteService.getPaciente(dni);
         String modoNormalizado = modo.toUpperCase();
         boolean valido = modoNormalizado.equals("RAPIDO") || modoNormalizado.equals("LENTO");
 
-        if (valido) {
-            this.rutinaActual = modoNormalizado;
+        if (valido && p != null) {
+            p.setRutinaActual(modoNormalizado);
+            pacienteService.updatePaciente(p);
         }
 
         Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("dni", dni);
         respuesta.put("rutinaValida", valido);
-        respuesta.put("modoSeleccionado", this.rutinaActual);
-        respuesta.put("mensaje", valido ? "Rutina actualizada correctamente" : "Modo no válido (use RAPIDO o LENTO)");
+        respuesta.put("modoSeleccionado", p.getRutinaActual());
         return respuesta;
     }
 
-    // Método del diagrama: + comenzarDialisis(bool): bool
-    // Prueba en navegador: http://localhost:8080/paciente/comenzar
-    @GetMapping("/comenzar")
-    public Map<String, Object> comenzarDialisisEndpoint() {
-        boolean viaConectada = true; // Simulamos que la vía está correctamente conectada
-        boolean iniciada = comenzarDialisis(viaConectada);
+    // Comenzar diálisis en BD: GET http://localhost:8080/paciente/12345678A/comenzar
+    @GetMapping("/{dni}/comenzar")
+    public Map<String, Object> comenzarDialisisEndpoint(@PathVariable String dni) {
+        Paciente p = pacienteService.getPaciente(dni);
+        boolean viaConectada = true;
+
+        if (viaConectada && verAgua() >= 20) {
+            p.setDialisisEnCurso(true);
+            pacienteService.updatePaciente(p);
+        }
 
         Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("viaConectada", viaConectada);
-        respuesta.put("dialisisIniciada", iniciada);
-        respuesta.put("rutina", this.rutinaActual);
+        respuesta.put("dni", dni);
+        respuesta.put("dialisisIniciada", p.isDialisisEnCurso());
+        respuesta.put("rutina", p.getRutinaActual());
         return respuesta;
     }
 
-    // Método del diagrama: + detenerDialisis(bool): bool
-    // Prueba en navegador: http://localhost:8080/paciente/detener
-    @GetMapping("/detener")
-    public Map<String, Object> detenerDialisisEndpoint() {
-        boolean confirmacionParada = true;
-        boolean detenida = detenerDialisis(confirmacionParada);
+    // Detener diálisis en BD: GET http://localhost:8080/paciente/12345678A/detener
+    @GetMapping("/{dni}/detener")
+    public Map<String, Object> detenerDialisisEndpoint(@PathVariable String dni) {
+        Paciente p = pacienteService.getPaciente(dni);
+        p.setDialisisEnCurso(false);
+        pacienteService.updatePaciente(p);
 
         Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("dialisisDetenida", detenida);
-        respuesta.put("estadoActual", this.dialisisEnCurso ? "EN_CURSO" : "DETENIDA_POR_PACIENTE");
+        respuesta.put("dni", dni);
+        respuesta.put("dialisisDetenida", true);
+        respuesta.put("estadoActual", "DETENIDA_POR_PACIENTE");
         return respuesta;
     }
-
-    // --- IMPLEMENTACIÓN DE LOS MÉTODOS EXACTOS DEL DIAGRAMA ---
 
     public int verAgua() {
-        return 85; // Devuelve porcentaje de agua disponible en el depósito
-    }
-
-    public String consultarHorario() {
-        return "Lunes, Miércoles y Viernes - 18:00h (" + this.rutinaActual + ")";
-    }
-
-    public boolean comenzarDialisis(boolean viaLista) {
-        if (viaLista && verAgua() >= 20) {
-            this.dialisisEnCurso = true;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean detenerDialisis(boolean emergencia) {
-        if (emergencia) {
-            this.dialisisEnCurso = false;
-            return true;
-        }
-        return false;
+        return 85;
     }
 }
